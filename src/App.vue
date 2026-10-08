@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { loadFromStorage, saveToStorage } from '@/utils/storage'
 import ParticipantsTable from '@/components/ParticipantsTable.vue'
 import RegistrationBlock from '@/components/RegistrationBlock.vue'
 import WinnersBlock from '@/components/WinnersBlock.vue'
 import type { Participant, ParticipantData } from '@/types/participant'
 
 const MAX_WINNERS = 3
+const PARTICIPANTS_KEY = 'lottery-participants'
+const WINNERS_KEY = 'lottery-winner-ids'
 
-const participants = ref<Participant[]>([])
-const winnerIds = ref<number[]>([])
+const participants = ref<Participant[]>(loadFromStorage<Participant[]>(PARTICIPANTS_KEY, []))
+const winnerIds = ref<number[]>(loadFromStorage<number[]>(WINNERS_KEY, []))
 
-// Переможці у порядку, в якому їх обрали
+watch(participants, (value) => saveToStorage(PARTICIPANTS_KEY, value), { deep: true })
+watch(winnerIds, (value) => saveToStorage(WINNERS_KEY, value), { deep: true })
+
 const winners = computed(() =>
   winnerIds.value.flatMap((id) => {
     const participant = participants.value.find((p) => p.id === id)
@@ -18,7 +23,6 @@ const winners = computed(() =>
   }),
 )
 
-// Ті, хто ще не вигравав
 const availableParticipants = computed(() =>
   participants.value.filter((p) => !winnerIds.value.includes(p.id)),
 )
