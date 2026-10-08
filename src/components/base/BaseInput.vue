@@ -15,6 +15,7 @@ withDefaults(
   },
 )
 
+const emit = defineEmits<{ blur: [] }>()
 const model = defineModel<string>({ required: true })
 const id = useId()
 </script>
@@ -29,6 +30,7 @@ const id = useId()
       :class="{ 'is-invalid': error }"
       :type="type"
       :placeholder="placeholder"
+      @blur="emit('blur')"
     />
     <div v-if="error" class="invalid-feedback">{{ error }}</div>
   </div>

@@ -1,7 +1,8 @@
 export interface Participant {
   id: number
   name: string
-  birthDate: string // формат yyyy-mm-dd, як у <input type="date">
+  birthDate: string
   email: string
-  phone: string // формат +380XXXXXXXXX
+  phone: string
 }
+export type ParticipantData = Omit<Participant, 'id'>

@@ -1,22 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import BaseButton from './components/base/BaseButton.vue'
-import BaseInput from './components/base/BaseInput.vue'
+import ParticipantsTable from '@/components/ParticipantsTable.vue'
+import RegistrationBlock from '@/components/RegistrationBlock.vue'
+import type { Participant, ParticipantData } from '@/types/participant'
 
-const name = ref('')
+const participants = ref<Participant[]>([])
+
+function addParticipant(data: ParticipantData) {
+  participants.value.push({ id: Date.now(), ...data })
+}
 </script>
 
 <template>
   <div class="container py-4">
-    <div class="card card-body">
-      <BaseInput
-        v-model="name"
-        label="Name"
-        placeholder="Enter user name"
-        :error="name === 'x' ? 'Test error' : ''"
-      />
-      <p>Ти ввела: {{ name }}</p>
-      <BaseButton @click="name = ''">Очистити</BaseButton>
-    </div>
+    <RegistrationBlock :participants="participants" @submit="addParticipant" />
+    <ParticipantsTable :participants="participants" />
   </div>
 </template>
