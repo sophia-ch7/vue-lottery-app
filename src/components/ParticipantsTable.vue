@@ -3,7 +3,10 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import type { Participant } from '@/types/participant'
 
 defineProps<{ participants: Participant[] }>()
-const emit = defineEmits<{ delete: [participant: Participant] }>()
+const emit = defineEmits<{
+  edit: [participant: Participant]
+  delete: [participant: Participant]
+}>()
 </script>
 
 <template>
@@ -15,27 +18,37 @@ const emit = defineEmits<{ delete: [participant: Participant] }>()
             <tr>
               <th scope="col" class="text-muted">#</th>
               <th scope="col">Name</th>
-              <th scope="col">Date of Birth</th>
+              <th scope="col" class="text-nowrap">Date of Birth</th>
               <th scope="col">Email</th>
               <th scope="col">Phone number</th>
-              <th scope="col">Actions</th>
+              <th scope="col">Edit</th>
+              <th scope="col">Delete</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(participant, index) in participants" :key="participant.id">
               <td class="text-muted">{{ index + 1 }}</td>
               <td>{{ participant.name }}</td>
-              <td>{{ participant.birthDate }}</td>
+              <td class="text-nowrap">{{ participant.birthDate }}</td>
               <td>{{ participant.email }}</td>
               <td>{{ participant.phone }}</td>
               <td>
-                <BaseButton class="btn-sm" variant="danger" @click="emit('delete', participant)">
+                <BaseButton class="btn-sm text-nowrap" @click="emit('edit', participant)">
+                  Редагувати дані
+                </BaseButton>
+              </td>
+              <td>
+                <BaseButton
+                  class="btn-sm text-nowrap"
+                  variant="danger"
+                  @click="emit('delete', participant)"
+                >
                   Видалити учасника
                 </BaseButton>
               </td>
             </tr>
             <tr v-if="participants.length === 0">
-              <td colspan="6" class="text-center text-muted">Учасників поки немає</td>
+              <td colspan="7" class="text-center text-muted">Учасників поки немає</td>
             </tr>
           </tbody>
         </table>

@@ -4,7 +4,17 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import type { Participant, ParticipantData } from '@/types/participant'
 
-const props = defineProps<{ participants: Participant[] }>()
+const props = withDefaults(
+  defineProps<{
+    participants: Participant[]
+    initial?: Participant | null // якщо передано, форма працює в режимі редагування
+    submitLabel?: string
+  }>(),
+  {
+    initial: null,
+    submitLabel: 'Save',
+  },
+)
 const emit = defineEmits<{ submit: [data: ParticipantData] }>()
 
 type FieldName = keyof ParticipantData
@@ -20,7 +30,18 @@ const createEmptyForm = (): ParticipantData => ({
   phone: '',
 })
 
-const form = reactive<ParticipantData>(createEmptyForm())
+// Початкові значення: порожні (реєстрація) або дані учасника (редагування)
+const createInitialForm = (): ParticipantData =>
+  props.initial
+    ? {
+        name: props.initial.name,
+        birthDate: props.initial.birthDate,
+        email: props.initial.email,
+        phone: props.initial.phone,
+      }
+    : createEmptyForm()
+
+const form = reactive<ParticipantData>(createInitialForm())
 const touched = reactive<Record<FieldName, boolean>>({
   name: false,
   birthDate: false,
@@ -43,7 +64,12 @@ const errors = computed<Record<FieldName, string>>(() => {
   const email = form.email.trim().toLowerCase()
   if (!email) result.email = REQUIRED
   else if (!EMAIL_REGEXP.test(email)) result.email = 'Некоректна електронна пошта'
-  else if (props.participants.some((p) => p.email.toLowerCase() === email))
+  else if (
+    props.participants.some(
+      // власний e-mail учасника при редагуванні дублікатом не вважається
+      (p) => p.id !== props.initial?.id && p.email.toLowerCase() === email,
+    )
+  )
     result.email = 'Учасник з такою поштою вже існує'
 
   if (!form.phone.trim()) result.phone = REQUIRED
@@ -78,7 +104,8 @@ function onSubmit() {
     email: form.email.trim(),
     phone: form.phone.trim(),
   })
-  resetForm()
+  // Під час реєстрації форму очищуємо, під час редагування вікно закриє батько
+  if (!props.initial) resetForm()
 }
 </script>
 
@@ -115,7 +142,7 @@ function onSubmit() {
       @blur="touched.phone = true"
     />
     <div class="d-flex justify-content-end mt-4">
-      <BaseButton @click="onSubmit">Save</BaseButton>
+      <BaseButton @click="onSubmit">{{ submitLabel }}</BaseButton>
     </div>
   </form>
 </template>

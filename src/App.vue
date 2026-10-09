@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
+import ParticipantForm from '@/components/ParticipantForm.vue'
 import ParticipantsTable from '@/components/ParticipantsTable.vue'
 import RegistrationBlock from '@/components/RegistrationBlock.vue'
 import WinnersBlock from '@/components/WinnersBlock.vue'
@@ -51,6 +52,16 @@ function removeWinner(id: number) {
   winnerIds.value = winnerIds.value.filter((winnerId) => winnerId !== id)
 }
 
+// Редагування учасника
+const participantToEdit = ref<Participant | null>(null)
+
+function updateParticipant(data: ParticipantData) {
+  const target = participantToEdit.value
+  if (!target) return
+  participants.value = participants.value.map((p) => (p.id === target.id ? { ...p, ...data } : p))
+  participantToEdit.value = null
+}
+
 // Видалення учасника з підтвердженням
 const participantToDelete = ref<Participant | null>(null)
 
@@ -73,7 +84,25 @@ function confirmDelete() {
       @remove="removeWinner"
     />
     <RegistrationBlock :participants="participants" @submit="addParticipant" />
-    <ParticipantsTable :participants="participants" @delete="participantToDelete = $event" />
+    <ParticipantsTable
+      :participants="participants"
+      @edit="participantToEdit = $event"
+      @delete="participantToDelete = $event"
+    />
+
+    <BaseModal :show="participantToEdit !== null" @close="participantToEdit = null">
+      <template #header>
+        <h5 class="modal-title">Редагування учасника</h5>
+      </template>
+
+      <ParticipantForm
+        v-if="participantToEdit"
+        :participants="participants"
+        :initial="participantToEdit"
+        submit-label="Оновити дані"
+        @submit="updateParticipant"
+      />
+    </BaseModal>
 
     <BaseModal :show="participantToDelete !== null" @close="participantToDelete = null">
       <template #header>
