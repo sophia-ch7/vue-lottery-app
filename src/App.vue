@@ -5,8 +5,9 @@ import BaseModal from '@/components/base/BaseModal.vue'
 import ParticipantForm from '@/components/ParticipantForm.vue'
 import ParticipantsTable from '@/components/ParticipantsTable.vue'
 import RegistrationBlock from '@/components/RegistrationBlock.vue'
+import SearchBar from '@/components/SearchBar.vue'
 import WinnersBlock from '@/components/WinnersBlock.vue'
-import type { Participant, ParticipantData } from '@/types/participant'
+import type { Participant, ParticipantData, SortDirection, SortKey } from '@/types/participant'
 import { loadFromStorage, saveToStorage } from '@/utils/storage'
 
 const MAX_WINNERS = 3
@@ -52,6 +53,38 @@ function removeWinner(id: number) {
   winnerIds.value = winnerIds.value.filter((winnerId) => winnerId !== id)
 }
 
+// Фільтрація та сортування
+const filterName = ref('')
+const sortKey = ref<SortKey | null>(null)
+const sortDirection = ref<SortDirection>('asc')
+
+function toggleSort(key: SortKey) {
+  if (sortKey.value === key) {
+    // Повторний клік по тому ж контролу змінює напрямок
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortDirection.value = 'asc'
+  }
+}
+
+// Спочатку фільтруємо, потім сортуємо
+const visibleParticipants = computed(() => {
+  const query = filterName.value.trim().toLowerCase()
+  // filter створює новий масив, тому вихідний список participants не змінюється
+  const filtered = participants.value.filter((p) => p.name.toLowerCase().includes(query))
+
+  const key = sortKey.value
+  if (!key) return filtered
+
+  const direction = sortDirection.value === 'asc' ? 1 : -1
+  return filtered.sort((a, b) => {
+    const result =
+      key === 'name' ? a.name.localeCompare(b.name, 'uk') : a.birthDate.localeCompare(b.birthDate)
+    return result * direction
+  })
+})
+
 // Редагування учасника
 const participantToEdit = ref<Participant | null>(null)
 
@@ -84,8 +117,18 @@ function confirmDelete() {
       @remove="removeWinner"
     />
     <RegistrationBlock :participants="participants" @submit="addParticipant" />
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <SearchBar @filter-by-name="filterName = $event" />
+      </div>
+    </div>
+
     <ParticipantsTable
-      :participants="participants"
+      :participants="visibleParticipants"
+      :sort-key="sortKey"
+      :sort-direction="sortDirection"
+      @sort="toggleSort"
       @edit="participantToEdit = $event"
       @delete="participantToDelete = $event"
     />

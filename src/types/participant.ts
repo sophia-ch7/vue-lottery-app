@@ -6,3 +6,5 @@ export interface Participant {
   phone: string
 }
 export type ParticipantData = Omit<Participant, 'id'>
+export type SortKey = 'name' | 'birthDate'
+export type SortDirection = 'asc' | 'desc'
