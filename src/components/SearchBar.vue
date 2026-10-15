@@ -3,9 +3,11 @@ import { ref, watch } from 'vue'
 
 const DEBOUNCE_MS = 300
 
+const props = withDefaults(defineProps<{ initialValue?: string }>(), { initialValue: '' })
 const emit = defineEmits<{ 'filter-by-name': [value: string] }>()
 
-const query = ref('')
+// Початкове значення можна передати ззовні (наприклад, з адреси /users?q=john)
+const query = ref(props.initialValue)
 
 // Debounce: чекаємо 300 мс після останнього символу і лише тоді повідомляємо батька
 watch(query, (value, _oldValue, onCleanup) => {
@@ -21,6 +23,6 @@ watch(query, (value, _oldValue, onCleanup) => {
     class="form-control"
     type="search"
     placeholder="Search by name"
-    aria-label="Пошук учасників за іменем"
+    aria-label="Пошук за іменем"
   />
 </template>
