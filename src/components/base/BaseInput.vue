@@ -16,7 +16,7 @@ withDefaults(
 )
 
 const emit = defineEmits<{ blur: [] }>()
-const model = defineModel<string>({ required: true })
+const model = defineModel<string | undefined>({ required: true })
 const id = useId()
 </script>
 

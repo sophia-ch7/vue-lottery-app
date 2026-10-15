@@ -4,6 +4,7 @@ import { ServiceProvider } from '@/services/service-provider'
 import { useUsersStore } from '@/stores/users'
 import type { User } from '@/types/user'
 
+// props: true у маршруті передає параметр :id з адреси як звичайний проп (завжди рядок)
 const props = defineProps<{ id: string }>()
 
 const store = useUsersStore()
@@ -13,11 +14,19 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 
 async function loadUser() {
+  const id = Number(props.id)
   isLoading.value = true
   error.value = null
   user.value = null
   try {
-    const fetched = await ServiceProvider.users.getById(Number(props.id))
+    // користувачі, створені локально, на сервері не існують
+    const local = store.findCreated(id)
+    if (local) {
+      user.value = local
+      return
+    }
+    const fetched = await ServiceProvider.users.getById(id)
+    // накладаємо локальні зміни (сервер їх не зберігає)
     user.value = store.applyLocalChanges([fetched])[0] ?? null
   } catch (e) {
     error.value = (e as Error).message
@@ -67,9 +76,12 @@ watch(() => props.id, loadUser, { immediate: true })
         </div>
       </div>
 
+      <!-- Сюди роутер підставляє вкладений маршрут (форму редагування) -->
       <RouterView v-slot="{ Component }">
         <component :is="Component" :user="user" @saved="user = $event" />
       </RouterView>
     </template>
+
+    <div v-else class="alert alert-warning" role="alert">Користувача не знайдено</div>
   </div>
 </template>

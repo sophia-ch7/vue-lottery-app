@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import BaseButton from '@/components/base/BaseButton.vue'
 import type { User } from '@/types/user'
 
 defineProps<{ users: User[] }>()
+const emit = defineEmits<{ delete: [user: User] }>()
 </script>
 
 <template>
@@ -15,6 +17,7 @@ defineProps<{ users: User[] }>()
           <th scope="col">Email</th>
           <th scope="col">Phone number</th>
           <th scope="col">Age</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -29,9 +32,20 @@ defineProps<{ users: User[] }>()
           <td>{{ user.email }}</td>
           <td class="text-nowrap">{{ user.phone }}</td>
           <td>{{ user.age }}</td>
+          <td class="text-nowrap">
+            <RouterLink
+              :to="{ name: 'user-edit', params: { id: user.id } }"
+              class="btn btn-info text-white btn-sm me-2"
+            >
+              Edit
+            </RouterLink>
+            <BaseButton class="btn-sm" variant="danger" @click="emit('delete', user)">
+              Delete
+            </BaseButton>
+          </td>
         </tr>
         <tr v-if="users.length === 0">
-          <td colspan="6" class="text-center text-muted">Користувачів не знайдено</td>
+          <td colspan="7" class="text-center text-muted">Користувачів не знайдено</td>
         </tr>
       </tbody>
     </table>

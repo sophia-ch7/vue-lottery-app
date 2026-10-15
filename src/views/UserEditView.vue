@@ -7,8 +7,8 @@ import { useUsersStore } from '@/stores/users'
 import type { CreateUserDto, User } from '@/types/user'
 
 const props = defineProps<{
-  id: string
-  user: User
+  id: string // з адреси (props: true)
+  user: User // передає батьківський компонент
 }>()
 
 const emit = defineEmits<{ saved: [user: User] }>()
@@ -23,7 +23,9 @@ async function onSubmit(data: CreateUserDto) {
   isSubmitting.value = true
   error.value = null
   try {
-    await ServiceProvider.users.update(props.user.id, data)
+    // користувачі, створені локально, на сервері не існують
+    if (!store.isCreated(props.user.id)) await ServiceProvider.users.update(props.user.id, data)
+    // Сервер зміни не зберігає, тому оновлюємо локальний стан самі
     const saved: User = { ...props.user, ...data }
     store.saveUpdated(saved)
     emit('saved', saved)
