@@ -7,7 +7,7 @@ import type { Participant, ParticipantData } from '@/types/participant'
 const props = withDefaults(
   defineProps<{
     participants: Participant[]
-    initial?: Participant | null // якщо передано, форма працює в режимі редагування
+    initial?: Participant | null
     submitLabel?: string
   }>(),
   {
@@ -30,7 +30,6 @@ const createEmptyForm = (): ParticipantData => ({
   phone: '',
 })
 
-// Початкові значення: порожні (реєстрація) або дані учасника (редагування)
 const createInitialForm = (): ParticipantData =>
   props.initial
     ? {
@@ -49,7 +48,6 @@ const touched = reactive<Record<FieldName, boolean>>({
   phone: false,
 })
 
-// Сьогоднішня дата у форматі yyyy-mm-dd (локальний час)
 const getToday = () => new Date().toLocaleDateString('sv-SE')
 
 const errors = computed<Record<FieldName, string>>(() => {
@@ -65,10 +63,7 @@ const errors = computed<Record<FieldName, string>>(() => {
   if (!email) result.email = REQUIRED
   else if (!EMAIL_REGEXP.test(email)) result.email = 'Некоректна електронна пошта'
   else if (
-    props.participants.some(
-      // власний e-mail учасника при редагуванні дублікатом не вважається
-      (p) => p.id !== props.initial?.id && p.email.toLowerCase() === email,
-    )
+    props.participants.some((p) => p.id !== props.initial?.id && p.email.toLowerCase() === email)
   )
     result.email = 'Учасник з такою поштою вже існує'
 
@@ -80,7 +75,6 @@ const errors = computed<Record<FieldName, string>>(() => {
 
 const isValid = computed(() => Object.values(errors.value).every((error) => !error))
 
-// Помилку показуємо лише для полів, яких уже торкнулися
 const visibleError = (field: FieldName) => (touched[field] ? errors.value[field] : '')
 
 function setAllTouched(value: boolean) {
@@ -91,11 +85,11 @@ function setAllTouched(value: boolean) {
 
 function resetForm() {
   Object.assign(form, createEmptyForm())
-  setAllTouched(false) // без «торкання» валідація мовчить
+  setAllTouched(false)
 }
 
 function onSubmit() {
-  setAllTouched(true) // тепер показуємо всі помилки
+  setAllTouched(true)
   if (!isValid.value) return
 
   emit('submit', {
@@ -104,7 +98,6 @@ function onSubmit() {
     email: form.email.trim(),
     phone: form.phone.trim(),
   })
-  // Під час реєстрації форму очищуємо, під час редагування вікно закриє батько
   if (!props.initial) resetForm()
 }
 </script>

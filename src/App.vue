@@ -17,11 +17,9 @@ const WINNERS_KEY = 'lottery-winner-ids'
 const participants = ref<Participant[]>(loadFromStorage<Participant[]>(PARTICIPANTS_KEY, []))
 const winnerIds = ref<number[]>(loadFromStorage<number[]>(WINNERS_KEY, []))
 
-// Збереження в localStorage: watch з опцією deep
 watch(participants, (value) => saveToStorage(PARTICIPANTS_KEY, value), { deep: true })
 watch(winnerIds, (value) => saveToStorage(WINNERS_KEY, value), { deep: true })
 
-// Переможці у порядку, в якому їх обрали
 const winners = computed(() =>
   winnerIds.value.flatMap((id) => {
     const participant = participants.value.find((p) => p.id === id)
@@ -29,7 +27,6 @@ const winners = computed(() =>
   }),
 )
 
-// Ті, хто ще не вигравав
 const availableParticipants = computed(() =>
   participants.value.filter((p) => !winnerIds.value.includes(p.id)),
 )
@@ -53,14 +50,12 @@ function removeWinner(id: number) {
   winnerIds.value = winnerIds.value.filter((winnerId) => winnerId !== id)
 }
 
-// Фільтрація та сортування
 const filterName = ref('')
 const sortKey = ref<SortKey | null>(null)
 const sortDirection = ref<SortDirection>('asc')
 
 function toggleSort(key: SortKey) {
   if (sortKey.value === key) {
-    // Повторний клік по тому ж контролу змінює напрямок
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
     sortKey.value = key
@@ -68,10 +63,8 @@ function toggleSort(key: SortKey) {
   }
 }
 
-// Спочатку фільтруємо, потім сортуємо
 const visibleParticipants = computed(() => {
   const query = filterName.value.trim().toLowerCase()
-  // filter створює новий масив, тому вихідний список participants не змінюється
   const filtered = participants.value.filter((p) => p.name.toLowerCase().includes(query))
 
   const key = sortKey.value
@@ -85,7 +78,6 @@ const visibleParticipants = computed(() => {
   })
 })
 
-// Редагування учасника
 const participantToEdit = ref<Participant | null>(null)
 
 function updateParticipant(data: ParticipantData) {
@@ -95,14 +87,12 @@ function updateParticipant(data: ParticipantData) {
   participantToEdit.value = null
 }
 
-// Видалення учасника з підтвердженням
 const participantToDelete = ref<Participant | null>(null)
 
 function confirmDelete() {
   const target = participantToDelete.value
   if (!target) return
   participants.value = participants.value.filter((p) => p.id !== target.id)
-  // Якщо видалений учасник був переможцем, прибираємо і з блоку переможців
   winnerIds.value = winnerIds.value.filter((id) => id !== target.id)
   participantToDelete.value = null
 }
