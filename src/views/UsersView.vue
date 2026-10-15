@@ -6,11 +6,13 @@ import SearchBar from '@/components/SearchBar.vue'
 import UsersTable from '@/components/UsersTable.vue'
 import { ServiceProvider } from '@/services/service-provider'
 import type { User } from '@/types/user'
+import { useUsersStore } from '@/stores/users'
 
 const PAGE_SIZE = 10
 
 const route = useRoute()
 const router = useRouter()
+const store = useUsersStore()
 
 const users = ref<User[]>([])
 const total = ref(0)
@@ -37,7 +39,7 @@ async function loadUsers() {
       search: search.value,
     })
     if (requestId !== lastRequestId) return
-    users.value = result.items
+    users.value = store.applyLocalChanges(result.items)
     total.value = result.total
   } catch (e) {
     if (requestId !== lastRequestId) return

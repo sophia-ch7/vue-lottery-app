@@ -20,7 +20,11 @@ defineProps<{ users: User[] }>()
       <tbody>
         <tr v-for="user in users" :key="user.id">
           <td class="text-muted">{{ user.id }}</td>
-          <td class="text-nowrap">{{ user.firstName }} {{ user.lastName }}</td>
+          <td class="text-nowrap">
+            <RouterLink :to="{ name: 'user-details', params: { id: user.id } }">
+              {{ user.firstName }} {{ user.lastName }}
+            </RouterLink>
+          </td>
           <td>{{ user.username }}</td>
           <td>{{ user.email }}</td>
           <td class="text-nowrap">{{ user.phone }}</td>

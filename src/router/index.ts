@@ -6,9 +6,22 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
     { path: '/about', name: 'about', component: () => import('@/views/AboutView.vue') },
     { path: '/users', name: 'users', component: () => import('@/views/UsersView.vue') },
+    {
+      path: '/users/:id(\\d+)',
+      name: 'user-details',
+      component: () => import('@/views/UserDetailsView.vue'),
+      props: true,
+      children: [
+        {
+          path: 'edit',
+          name: 'user-edit',
+          component: () => import('@/views/UserEditView.vue'),
+          props: true,
+        },
+      ],
+    },
     { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue') },
     { path: '/lottery', name: 'lottery', component: () => import('@/views/LotteryView.vue') },
-    // catch-all: будь-яка адреса, якої немає вище
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
