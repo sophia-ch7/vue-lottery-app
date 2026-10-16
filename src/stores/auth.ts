@@ -14,7 +14,6 @@ interface StoredAuth {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  // Відновлюємо вхід зі сховища браузера
   const stored = loadFromStorage<StoredAuth | null>(STORAGE_KEY, null)
 
   const accessToken = ref<string | null>(stored?.accessToken ?? null)
@@ -23,7 +22,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => accessToken.value !== null)
 
-  // Будь-яка зміна автоматично зберігається в localStorage
   watch(
     [accessToken, refreshToken, user],
     () => {
@@ -70,12 +68,11 @@ export const useAuthStore = defineStore('auth', () => {
       refreshToken.value = tokens.refreshToken
       return tokens.accessToken
     } catch {
-      logout() // refresh-токен теж не підійшов: потрібен новий вхід
+      logout()
       return null
     }
   }
 
-  // Якщо кілька запитів одночасно отримали 401, оновлюємо токен лише один раз
   let refreshing: Promise<string | null> | null = null
 
   function refreshAccessToken(): Promise<string | null> {
@@ -85,7 +82,6 @@ export const useAuthStore = defineStore('auth', () => {
     return refreshing
   }
 
-  // Підключаємо стор до HTTP-клієнта (interceptor)
   registerAuthHooks({
     getAccessToken: () => accessToken.value,
     refreshAccessToken,

@@ -1,18 +1,15 @@
 import { fileURLToPath, URL } from 'node:url'
-
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
+import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    vue(),
-    vueDevTools(),
-  ],
+export default defineConfig(({ command }) => ({
+  // На gh-pages сайт лежить у підпапці /vue-lottery-app/, а локально (npm run dev) у корені
+  base: command === 'build' ? '/vue-lottery-app/' : '/',
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-})
+}))

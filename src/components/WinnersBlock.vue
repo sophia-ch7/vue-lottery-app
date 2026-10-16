@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import BaseButton from '@/components/base/BaseButton.vue'
 import WinnerChip from '@/components/WinnerChip.vue'
-import type { Participant } from '@/types/participant'
+
+// Переможцю потрібні лише id та ім'я, тому блок підходить і для учасників лотереї,
+// і для користувачів з API
+interface Winner {
+  id: number
+  name: string
+}
 
 defineProps<{
-  winners: Participant[]
+  winners: Winner[]
   canPick: boolean
 }>()
 

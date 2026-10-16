@@ -2,14 +2,12 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CreateUserDto, User } from '@/types/user'
 
-// DummyJSON лише імітує зміни (дані на сервері не змінюються), тому всі наші зміни
-// зберігаємо тут і накладаємо поверх даних, які приходять з сервера.
 export const useUsersStore = defineStore('users', () => {
   const updatedById = ref<Record<number, User>>({})
   const deletedIds = ref<number[]>([])
   const createdUsers = ref<User[]>([])
+  const winners = ref<User[]>([])
 
-  // Серверний список + наші зміни: без видалених, з оновленими даними
   function applyLocalChanges(users: User[]): User[] {
     return users
       .filter((user) => !deletedIds.value.includes(user.id))
@@ -24,7 +22,6 @@ export const useUsersStore = defineStore('users', () => {
     return findCreated(id) !== undefined
   }
 
-  // Сервер завжди повертає той самий id для нових, тому унікальний id видаємо самі
   function addCreated(data: CreateUserDto, serverId: number): User {
     const id = Math.max(serverId, ...createdUsers.value.map((user) => user.id + 1))
     const user: User = { ...data, id, image: '' }
@@ -32,10 +29,21 @@ export const useUsersStore = defineStore('users', () => {
     return user
   }
 
+  function addWinner(user: User) {
+    if (!winners.value.some((winner) => winner.id === user.id)) winners.value.push(user)
+  }
+
+  function removeWinner(id: number) {
+    winners.value = winners.value.filter((winner) => winner.id !== id)
+  }
+
   function saveUpdated(user: User) {
     const index = createdUsers.value.findIndex((item) => item.id === user.id)
     if (index !== -1) createdUsers.value[index] = user
     else updatedById.value[user.id] = user
+
+    const winnerIndex = winners.value.findIndex((winner) => winner.id === user.id)
+    if (winnerIndex !== -1) winners.value[winnerIndex] = user
   }
 
   function removeUser(id: number) {
@@ -44,14 +52,18 @@ export const useUsersStore = defineStore('users', () => {
     } else if (!deletedIds.value.includes(id)) {
       deletedIds.value.push(id)
     }
+    removeWinner(id)
   }
 
   return {
     createdUsers,
+    winners,
     applyLocalChanges,
     findCreated,
     isCreated,
     addCreated,
+    addWinner,
+    removeWinner,
     saveUpdated,
     removeUser,
   }
